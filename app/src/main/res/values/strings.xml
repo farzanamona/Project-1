@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Project-1</string>
+    <string name="profile">Profile</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="Settings">Settings</string>
+    <string name="logout">Log out</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+</resources>
