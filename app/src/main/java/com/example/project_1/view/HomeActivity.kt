@@ -1,6 +1,7 @@
 package com.example.project_1.view
 
 import android.Manifest
+import android.Manifest.permission.CAMERA
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -38,7 +39,6 @@ import java.util.*
 
 class HomeActivity : AppCompatActivity() {
     private var context: Context? =null
-    private var image_view: ImageView? =null
     private var etFullName: TextView? =null
     private var etEmail: TextView? =null
     private var etPhone: TextView? =null
@@ -49,10 +49,9 @@ class HomeActivity : AppCompatActivity() {
     var db: UserDataBase? = null
     private var user: User? = null
 
-    var currentPath : String?=null
-    val TAKE_PICTURE=3
     private var imageview: ImageView? = null
     private val GALLERY = 1
+    private val CAMERA = 2
     private val PERMISSION_CODE = 2
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -200,49 +199,26 @@ class HomeActivity : AppCompatActivity() {
         }
         pictureDialog.show()
     }
-    fun choosePhotoFromGallary(){
+
+    fun choosePhotoFromGallary() {
         val galleryIntent = Intent(Intent.ACTION_PICK,
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
 
         startActivityForResult(galleryIntent, GALLERY)
-
     }
 
-    private fun takePhotoFromCamera(){
-
-        dishpetOnCameraIntent()
+    private fun takePhotoFromCamera() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(intent, CAMERA)
     }
 
-    fun dishpetOnCameraIntent(){
-        val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (intent.resolveActivity(packageManager)!= null){
-            var photofile: File?= null
-            try{
-                photofile = createImage()
+    public override fun onActivityResult(requestCode:Int, resultCode:Int, data: Intent?) {
 
-            }catch (e: IOException){
-                e.printStackTrace()
-            }
-            if (photofile!= null){
-                var photoUri = FileProvider.getUriForFile(this,"com.example.fileproviderwithcamera",photofile)
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-                startActivityForResult(intent,TAKE_PICTURE)
-            }
-        }
-    }
-    fun createImage(): File {
-        val timestamp = SimpleDateFormat("yyyyMMdd-HHmmss").format(Date())
-        val imageName = timestamp
-        var storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        var image = File.createTempFile("image",".jpg",storageDir)
-        currentPath = image.absolutePath
-        return image
-
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
+        /* if (resultCode == this.RESULT_CANCELED)
+         {
+         return
+         }*/
         if (requestCode == GALLERY)
         {
             if (data != null)
@@ -255,7 +231,6 @@ class HomeActivity : AppCompatActivity() {
                     Toast.makeText(this, "Image Saved!", Toast.LENGTH_SHORT).show()
                     imageview!!.setImageBitmap(bitmap)
 
-
                 }
                 catch (e: IOException) {
                     e.printStackTrace()
@@ -265,20 +240,15 @@ class HomeActivity : AppCompatActivity() {
             }
 
         }
-        if (requestCode==TAKE_PICTURE && resultCode == Activity.RESULT_OK){
-            try{
-                val file = File(currentPath)
-                Log.e("currentPath",""+currentPath)
-                val uri = Uri.fromFile(file)
-                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-                imageview!!.setImageBitmap(bitmap)
-                saveImage(bitmap)
-                Toast.makeText(this, "Image Saved!", Toast.LENGTH_SHORT).show()
-            }catch (e: IOException){
-                e.printStackTrace()
-            }
+        else if (requestCode == CAMERA)
+        {
+            val thumbnail = data!!.extras!!.get("data") as Bitmap
+            imageview!!.setImageBitmap(thumbnail)
+            saveImage(thumbnail)
+            Toast.makeText(this, "Image Saved!", Toast.LENGTH_SHORT).show()
         }
     }
+
     fun saveImage(myBitmap: Bitmap):String {
         val bytes = ByteArrayOutputStream()
         myBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes)
@@ -304,7 +274,7 @@ class HomeActivity : AppCompatActivity() {
                 arrayOf(f.getPath()),
                 arrayOf("image/jpeg"), null)
             fo.close()
-            Log.d("TAG", "File Saved::--->" + f.absolutePath)
+            Log.d("TAG", "File Saved::--->" + f.getAbsolutePath())
 
             return f.getAbsolutePath()
         }
@@ -314,8 +284,9 @@ class HomeActivity : AppCompatActivity() {
 
         return ""
     }
+
     companion object {
-        private val IMAGE_DIRECTORY = "/demonut"
+        private val IMAGE_DIRECTORY = "/demonuts"
     }
 
 }

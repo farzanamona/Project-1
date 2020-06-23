@@ -125,7 +125,6 @@
                     android:inputType="textPassword"
                     android:paddingLeft="@dimen/_10sdp"
                     android:singleLine="true"
-                    android:text="bvduih"
                     android:padding="@dimen/_10sdp"
                     android:textColor="#000"
                     android:textColorHint="#000"
